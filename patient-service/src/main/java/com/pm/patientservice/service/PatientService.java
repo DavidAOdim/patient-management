@@ -1,5 +1,6 @@
 package com.pm.patientservice.service;
 
+import com.pm.patientservice.dto.PatientRequestDTO;
 import com.pm.patientservice.dto.PatientResponseDTO;
 import com.pm.patientservice.mapper.PatientMapper;
 import com.pm.patientservice.model.Patient;
@@ -18,12 +19,19 @@ public class PatientService {
         this.patientRepository = patientRepository;
     }
 
-    //getting the patients
+    //getting the patients. service returns DTO
     public List<PatientResponseDTO> getPatients() {
         List<Patient> patients = patientRepository.findAll();
 
         //iterates over each item in the patient list
 
         return patients.stream().map(PatientMapper::toDTO).toList();
+    }
+
+    //recieves DTO from postmapping from our controller
+    public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
+        Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));//built in jpa save method
+
+        return PatientMapper.toDTO(newPatient); //returning back to controller
     }
 }
