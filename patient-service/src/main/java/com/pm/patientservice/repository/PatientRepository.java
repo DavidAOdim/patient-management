@@ -11,4 +11,7 @@ public interface PatientRepository extends JpaRepository<Patient, UUID> { //pass
     //with JpaRepo we get access to CRUD functionality
     boolean existsByEmail(String email);
 
+    boolean existsByEmailAndIdNot(String email, UUID id);
+    //searches db for patients that have an email address but ignores the patient we are trying to update
+
 }
