@@ -4,6 +4,7 @@ import com.pm.patientservice.dto.PatientRequestDTO;
 import com.pm.patientservice.dto.PatientResponseDTO;
 import com.pm.patientservice.exception.EmailAlreadyExistsException;
 import com.pm.patientservice.exception.PatientNotFoundException;
+import com.pm.patientservice.grpc.BillingServiceGrpcClient;
 import com.pm.patientservice.mapper.PatientMapper;
 import com.pm.patientservice.model.Patient;
 import com.pm.patientservice.repository.PatientRepository;
@@ -15,12 +16,14 @@ import java.util.UUID;
 
 @Service //where business logic and DTO conversion happens for a given request
 public class PatientService {
-    private PatientRepository patientRepository;
+    private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-    public PatientService(PatientRepository patientRepository) { //dependency injection (Inversion of Control)
+    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient) { //dependency injection (Inversion of Control)
         //PatientService class receives it's dependency the patientRepo interface via a constructor
         //instead of instantiating the patient repo itself by using the new key word (makes code more modular and easier to test)
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     //getting the patients. service returns DTO
@@ -40,6 +43,8 @@ public class PatientService {
                     patientRequestDTO.getEmail() + " already exists");
         } //if email alr exists can't create a new patient
         Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));//built in jpa save method
+
+        billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail());
 
         return PatientMapper.toDTO(newPatient); //returning back to controller
     }
