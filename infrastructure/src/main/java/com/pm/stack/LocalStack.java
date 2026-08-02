@@ -199,7 +199,7 @@ public class LocalStack extends Stack {
 
         ContainerDefinitionOptions containerOptions = ContainerDefinitionOptions.builder()
                 .image(ContainerImage.fromRegistry("api=gateway"))
-                .environment(Map.of("SPRING_PROFILES_ACTIVE", "prod", "AUTH_SERVICE_URL", "http://host.docker.internal:4005"))
+                .environment(Map.of("SPRING_PROFILES_ACTIVE", "prod", "AUTH_SERVICE_URL", "http://host.docker.internal:4005")) //when ready for prod make an application-prod.yml file in api-gateway and for uri use: http://host.docker.internal
                 .portMappings(Stream.of(4004)
                         .map(port -> PortMapping.builder()
                                 .containerPort(port)
