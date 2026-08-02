@@ -26,6 +26,8 @@ spring:
                 - Path=/api/patients/**
               filters:
                 - StripPrefix=1
+                - JwtValidation #Now validation filter will only affect routes to patient service
+                ##convention based naming
 
               ## REST-CLIENT -> http://localhost:4004/api-docs/patients
               ## API-GATEWAY -> http://patient-srevice:4000/v3/api-docs
