@@ -34,9 +34,16 @@ spring:
             - id: api-docs-patient-route
               uri: http://patient-service:4000
               predicates:
-                - Path=/api-docs/patients
+                - Path=/api-docs/patients # sending patient docs to patient service
               filters:
                 - RewritePath=/api-docs/patients,/v3/api-docs
+            ## API Gateway routes hides the implementation of the actual route using routing rules
+            - id: api-docs-auth-route
+              uri: http://auth-service:4005
+              predicates:
+                - Path=/api-docs/auth # sending auth docs to auth service
+              filters:
+                - RewritePath=/api-docs/auth,/v3/api-docs
 
 management:
   endpoint:
