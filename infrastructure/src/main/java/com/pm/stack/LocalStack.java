@@ -1,14 +1,12 @@
 package com.pm.stack;
 
-import software.amazon.awscdk.App;
-import software.amazon.awscdk.RemovalPolicy;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.*;
 import software.amazon.awscdk.services.ec2.InstanceClass;
 import software.amazon.awscdk.services.ec2.InstanceSize;
 import software.amazon.awscdk.services.ec2.InstanceType;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.rds.*;
+import software.amazon.awscdk.services.route53.CfnHealthCheck;
 
 public class LocalStack extends Stack {
     private final Vpc vpc;
@@ -20,6 +18,10 @@ public class LocalStack extends Stack {
         DatabaseInstance authServiceDb = createDatabase("AuthServiceDB", "auth-service-db");
 
         DatabaseInstance patientServiceDb = createDatabase("PatientServiceDB", "patient-service-db");
+
+        CfnHealthCheck authDbHealthCheck = createDbHealthCheck(authServiceDb, "AuthServiceDbHealthCheck");
+
+        CfnHealthCheck patientDbHealthCheck = createDbHealthCheck(patientServiceDb, "PatientServiceDbHealthCheck");
     }
 
     private Vpc createVpc() {
@@ -42,5 +44,17 @@ public class LocalStack extends Stack {
                 .databaseName(dbName)
                 .removalPolicy(RemovalPolicy.DESTROY) //typically wouldn't do this in prod unless you specify a backup policy as well
                 .build();
+    }
+
+    private CfnHealthCheck createDbHealthCheck(DatabaseInstance db, String id) {
+        return CfnHealthCheck.Builder.create(this, id)
+                .healthCheckConfig(CfnHealthCheck.HealthCheckConfigProperty.builder()
+                        .type("TCP")
+                        .port(Token.asNumber(db.getDbInstanceEndpointPort()))
+                        .ipAddress(db.getDbInstanceEndpointAddress())
+                        .requestInterval(30)
+                        .failureThreshold(3) //tries 3 times once every 30 secs before reporting a failure
+                        .build())
+                .build(); //tells us whether the db is ready to accept connections or not
     }
 }
